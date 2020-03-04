@@ -5,7 +5,6 @@
  */
 package huffman;
 
-import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -15,6 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.PriorityQueue;
 import java.util.stream.Stream;
 
 /**
@@ -33,52 +33,134 @@ public class HuffmanUtils {
             e.printStackTrace();
         }
 
+//        try {
+//
+//            BufferedReader br = new BufferedReader(new FileReader(filePath));
+////            int c = br.readLine();
+//            contentBuilder.append((char)c);
+//        } catch (Exception ex) {
+//
+//        }
+
+        // read until end of file (EOF)
+//        try (Scanner scanner = new Scanner(new File(filePath))) {
+//            // read until end of file (EOF)
+//            while (scanner.hasNextLine()) {
+//                contentBuilder.append(scanner.nextLine());
+//                
+////                if(scanner.hasNextLine()) {
+////                    contentBuilder.append('\n');
+////                    contentBuilder.append('\r');
+////                } else {
+////                    
+////                }
+//            }
+//            // close the scanner
+//        } catch (Exception ex) {
+//
+//        }
+        
+        
         String fullFileContent = contentBuilder.toString();
         Map<String, Integer> frequencyTable = new HashMap<>();
 
         for (char character : fullFileContent.toCharArray()) {
             String tempString = String.valueOf(character);
             Integer frequency = frequencyTable.get(tempString);
-            
-            if(frequency == null) {
+
+            if (frequency == null) {
                 frequency = 1;
             } else {
                 frequency++;
             }
-            
-            frequencyTable.put(tempString, frequency );
-        }
 
-//        for (int i = 0; i < fullFileContent.length(); i++) {
-//
-//        }
-//
-//        System.out.println(frequencyTable);
+            frequencyTable.put(tempString, frequency);
+        }
 
         return HuffmanUtils.sortByValue(frequencyTable);
     }
-    
+
     public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
         List<Entry<K, V>> list = new ArrayList<>(map.entrySet());
         list.sort(Entry.comparingByValue());
 
         Map<K, V> result = new LinkedHashMap<>();
-        for (Entry<K, V> entry : list) {
+        list.forEach((entry) -> {
             result.put(entry.getKey(), entry.getValue());
-        }
+        });
 
         return result;
     }
-    
-    public static void buildEncodingTree(Map<String, Integer> frequencyTable ) {
-        
-        HuffmanNode root = new HuffmanNode();
-        
-        for (Entry<String, Integer> entry : frequencyTable.entrySet()) {
-            String charater = entry.getKey();
-            Integer frequency = entry.getValue();
-            
-            root.add(charater, frequency);
+
+    public static void printCode(HuffmanNode root, String s) {
+
+        // new line and space check
+        if (Character.isLetter(root.character) || root.character == ' ' || root.character == '\n') {
+            System.out.println(root.character + ":" + root.frequency + ": " + s);
         }
+
+        if (root.zero != null) {
+            printCode(root.zero, s + "0");
+        }
+
+        if (root.one != null) {
+            printCode(root.one, s + "1");
+        }
+    }
+
+    public static PriorityQueue<HuffmanNode> buildPriorityQueue(Map<String, Integer> table) {
+        PriorityQueue<HuffmanNode> queue = new PriorityQueue(table.size(), new HuffmanComperator());
+
+        table.entrySet().forEach((entry) -> {
+            char charater = entry.getKey().toCharArray()[0];
+            Integer frequency = entry.getValue();
+
+            queue.add(new HuffmanNode(charater, frequency));
+        });
+
+        return queue;
+    }
+
+    public static HuffmanNode buildEncodingTree(PriorityQueue<HuffmanNode> queue) {
+        HuffmanNode root = null;
+
+        while (queue.size() > 1) {
+
+            HuffmanNode x = queue.peek();
+            queue.poll();
+
+            HuffmanNode y = queue.peek();
+            queue.poll();
+
+            HuffmanNode f = new HuffmanNode();
+
+            f.frequency = x.frequency + y.frequency;
+            f.character = '-';
+
+            f.zero = x;
+            f.one = y;
+
+            root = f;
+
+            queue.add(f);
+        }
+
+        return root;
+    }
+
+    static void buildEncodingMap(HuffmanNode root, String s, Map<Character,String> codeMap) {
+                
+        if (Character.isLetter(root.character) || root.character == ' ' || root.character == '\n') {
+            codeMap.put(root.character, s);
+        }
+
+        if (root.zero != null) {
+            buildEncodingMap(root.zero, s + "0", codeMap);
+        }
+
+        if (root.one != null) {
+            buildEncodingMap(root.one, s + "1", codeMap);
+        }
+        
     }
 }

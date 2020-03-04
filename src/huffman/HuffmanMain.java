@@ -6,8 +6,17 @@
 package huffman;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  *
@@ -85,19 +94,163 @@ public class HuffmanMain extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        File fileToCompress = new File(jTextField1.getText());
+
         String filePath = jTextField1.getText();
         filePath = "./test.txt";
+        File fileToCompress = new File(filePath);
 
         Map<String, Integer> table = HuffmanUtils.buildFrequencyTable(filePath);
 
         System.out.println(table);
 
-        PriorityQueue queue = new PriorityQueue();
+        PriorityQueue<HuffmanNode> queue = HuffmanUtils.buildPriorityQueue(table);
+
+        HuffmanNode root = HuffmanUtils.buildEncodingTree(queue);
+
+        Map<Character, String> codeMap = new HashMap<>();
+        HuffmanUtils.buildEncodingMap(root, "", codeMap);
+
+        System.out.println(codeMap);
+
+        try {
+            FileWriter myWriter = new FileWriter("./test-encoded.txt");
+//            myWriter.write(table.toString());
+
+            StringBuilder contentBuilder = new StringBuilder();
+            try (Stream<String> stream = Files.lines(Paths.get(filePath), StandardCharsets.UTF_8)) {
+                stream.forEach(s -> contentBuilder.append(s).append("\n"));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            StringBuilder encodedString = new StringBuilder();
+            for (char c : contentBuilder.toString().toCharArray()) {
+                encodedString.append(codeMap.get(c));
+            }
+
+            myWriter.write(codeMap.toString());
+
+            String bin = encodedString.toString();
+
+//            System.out.println(bin);
+//            System.out.println(bin.getBytes());
+
+            int spot = 0; // Spot in array
+            byte[] bytes = new byte[256]; // byte array
+
+            System.out.println("encoding");
+            for (int i = 0; bin.length() > 7; i++) {
+                String temp = bin.substring(0, 7);
+                bin = bin.substring(7, bin.length());
+
+//                System.out.println(temp);
+                bytes[spot] = Byte.parseByte(temp, 2);
+                spot++;
+
+//                System.out.println(Byte.parseByte(temp, 2));
+            }
+            System.out.println("encoding-done");
+
+//            for (byte single : bytes) {
+//                String s1 = String.format("%7s", Integer.toBinaryString(single & 0xFF)).replace(' ', '0');
+//                System.out.println(s1); // 10000001
+//                
+////                if(Byte.) {
+////                    
+////                }
+//            }
+            for (int i = 0; i <= spot; i++) {
+                myWriter.write(bytes[i]);
+            }
+//            myWriter.write(encodedString.toString());
+
+            myWriter.close();
+
+            System.out.println("ENCODED FILE SUCCESSFULLY");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+
+        String filePath = "./test-encoded.txt";
+
+        StringBuilder contentBuilder = new StringBuilder();
+        try (Stream<String> stream = Files.lines(Paths.get(filePath), StandardCharsets.UTF_8)) {
+            stream.forEach(s -> contentBuilder.append(s));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        String s = contentBuilder.toString();
+        int offset = 1;
+        int indexOfEncodingStart = s.indexOf("{") + offset;
+        int indexOfEncodingEnd = s.indexOf("}");
+
+        String charEncodingString = s.substring(indexOfEncodingStart, indexOfEncodingEnd);
+        String characterEncodingArray[] = charEncodingString.split(",");
+
+//        System.out.println(charEncodingString);
+
+        Map<String, String> encodingTable = new HashMap<>();
+
+        for (String keyValuePair : characterEncodingArray) {
+            String[] keyValue = keyValuePair.split("=");
+            encodingTable.put(keyValue[1], keyValue[0].length() > 1 ? keyValue[0].trim() : keyValue[0]);
+        }
+
+//        System.out.println(encodingTable);
+
+        String encodedContent = s.substring(indexOfEncodingEnd + offset);
+
+//        System.out.println(encodedContent);
+//        System.out.println(encodedContent.getBytes());
+
+        StringBuilder sb = new StringBuilder();
+
+        String manualEOF = "0000000";
+
+        for (byte single : encodedContent.getBytes()) {
+            String s1 = String.format("%7s", Integer.toBinaryString(single & 0xFF)).replace(' ', '0');
+
+            // manual override of eof, probably not correct
+//            System.out.println(s1.equals(manualEOF));
+            if (s1.equals(manualEOF) && !encodingTable.containsKey(manualEOF)) {
+                break;
+            }
+
+//            System.out.println(s1);
+            sb.append(s1);
+        }
+
+        String encodedStringLine = sb.toString();
+        StringBuilder decodedText = new StringBuilder();
+
+        System.out.println("decoding-start");
+        StringBuilder tempCodeString = new StringBuilder();
+        for (char encodedChar : encodedStringLine.toCharArray()) {
+            tempCodeString.append(encodedChar);
+
+            if (encodingTable.containsKey(tempCodeString.toString())) {
+                decodedText.append(encodingTable.get(tempCodeString.toString()));
+                tempCodeString = new StringBuilder();
+            }
+        }
+        System.out.println("decoding-end");
+
+//        System.out.println(decodedText.toString());
+        FileWriter myWriter;
+        try {
+            myWriter = new FileWriter("./test-decoded.txt");
+            myWriter.write(decodedText.toString());
+            myWriter.close();
+            System.out.println("CREATED DECODED FILE SUCCESFULLY");
+        } catch (Exception ex) {
+
+        }
 
 
     }//GEN-LAST:event_jButton2ActionPerformed

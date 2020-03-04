@@ -10,25 +10,30 @@ package huffman;
  * @author arturs vitolins
  */
 public class HuffmanNode {
-    public String character;
-    public int count;
+
+    public char character;
+    public int frequency;
     public HuffmanNode zero;
     public HuffmanNode one;
-    
+
     public HuffmanNode() {
-        
+
     }
-    
-    public void add(String charater, int count) {
-        if( this.zero == null) {
+
+    public HuffmanNode(char character, int frequency) {
+        this.character = character;
+        this.frequency = frequency;
+    }
+
+    public void add(char charater, int frequency) {
+        if (this.zero == null) {
             zero = new HuffmanNode();
             zero.character = charater;
-            zero.count = count;
+            zero.frequency = frequency;
         } else {
             one = new HuffmanNode();
             one.character = charater;
-            one.count = count;
+            one.frequency = frequency;
         }
     }
-    
 }
