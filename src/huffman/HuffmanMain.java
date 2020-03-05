@@ -8,15 +8,9 @@ package huffman;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 /**
  *
@@ -40,25 +34,26 @@ public class HuffmanMain extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jButton1 = new javax.swing.JButton();
+        compressButton = new javax.swing.JButton();
         jTextField1 = new javax.swing.JTextField();
-        jButton2 = new javax.swing.JButton();
+        decompressButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jButton1.setText("jButton1");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        compressButton.setText("Arhivēt Failu");
+        compressButton.setName(""); // NOI18N
+        compressButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                compressButtonActionPerformed(evt);
             }
         });
 
-        jTextField1.setText("jTextField1");
+        jTextField1.setEnabled(false);
 
-        jButton2.setText("jButton2");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        decompressButton.setText("Atarhivēt failu");
+        decompressButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                decompressButtonActionPerformed(evt);
             }
         });
 
@@ -68,24 +63,21 @@ public class HuffmanMain extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton1))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jButton2)))
+                .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(compressButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(decompressButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(49, Short.MAX_VALUE)
-                .addComponent(jButton2)
+                .addComponent(decompressButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
+                    .addComponent(compressButton)
                     .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
@@ -93,8 +85,70 @@ public class HuffmanMain extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void decompressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_decompressButtonActionPerformed
+        String filePath = "./test-encoded.txt";
 
+        StringBuilder contentBuilder = new StringBuilder();
+        FileUtils.readFileIntoStringBuild(contentBuilder, filePath);
+
+        String s = contentBuilder.toString();
+        int offset = 1;
+        int indexOfEncodingStart = s.indexOf("{") + offset;
+        int indexOfEncodingEnd = s.indexOf("}");
+
+        String charEncodingString = s.substring(indexOfEncodingStart, indexOfEncodingEnd);
+        String characterEncodingArray[] = charEncodingString.split(",");
+
+        Map<String, String> encodingTable = new HashMap<>();
+
+        for (String keyValuePair : characterEncodingArray) {
+            String[] keyValue = keyValuePair.split("=");
+            encodingTable.put(keyValue[1], keyValue[0].length() > 1 ? keyValue[0].trim() : keyValue[0]);
+        }
+
+        String encodedContent = s.substring(indexOfEncodingEnd + offset);
+String manualEOF = "0000000";
+
+        StringBuilder sb = new StringBuilder();
+        for (byte single : encodedContent.getBytes()) {
+            String s1 = String.format("%7s", Integer.toBinaryString(single & 0xFF)).replace(' ', '0');
+
+            if (s1.equals(manualEOF) && !encodingTable.containsKey(manualEOF)) {
+                break;
+            }
+
+            sb.append(s1);
+        }
+
+        String encodedStringLine = sb.toString();
+        StringBuilder decodedText = new StringBuilder();
+
+        System.out.println("decoding-start");
+        StringBuilder tempCodeString = new StringBuilder();
+        for (char encodedChar : encodedStringLine.toCharArray()) {
+            tempCodeString.append(encodedChar);
+
+            if (encodingTable.containsKey(tempCodeString.toString())) {
+                decodedText.append(encodingTable.get(tempCodeString.toString()));
+                tempCodeString = new StringBuilder();
+            }
+        }
+        System.out.println("decoding-end");
+
+        FileWriter myWriter;
+        try {
+            myWriter = new FileWriter("./test-decoded.txt");
+            myWriter.write(decodedText.toString());
+            myWriter.close();
+            System.out.println("CREATED DECODED FILE SUCCESFULLY");
+        } catch (Exception ex) {
+
+        }
+
+
+    }//GEN-LAST:event_decompressButtonActionPerformed
+
+    private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compressButtonActionPerformed
         String filePath = jTextField1.getText();
         filePath = "./test.txt";
         File fileToCompress = new File(filePath);
@@ -114,14 +168,9 @@ public class HuffmanMain extends javax.swing.JFrame {
 
         try {
             FileWriter myWriter = new FileWriter("./test-encoded.txt");
-//            myWriter.write(table.toString());
 
             StringBuilder contentBuilder = new StringBuilder();
-            try (Stream<String> stream = Files.lines(Paths.get(filePath), StandardCharsets.UTF_8)) {
-                stream.forEach(s -> contentBuilder.append(s).append("\n"));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            FileUtils.readFileIntoStringBuild(contentBuilder, filePath);
 
             StringBuilder encodedString = new StringBuilder();
             for (char c : contentBuilder.toString().toCharArray()) {
@@ -132,37 +181,21 @@ public class HuffmanMain extends javax.swing.JFrame {
 
             String bin = encodedString.toString();
 
-//            System.out.println(bin);
-//            System.out.println(bin.getBytes());
-
-            int spot = 0; // Spot in array
-            byte[] bytes = new byte[256]; // byte array
+            int spot = 0;
+            byte[] bytes = new byte[256];
 
             System.out.println("encoding");
             for (int i = 0; bin.length() > 7; i++) {
                 String temp = bin.substring(0, 7);
                 bin = bin.substring(7, bin.length());
-
-//                System.out.println(temp);
                 bytes[spot] = Byte.parseByte(temp, 2);
                 spot++;
-
-//                System.out.println(Byte.parseByte(temp, 2));
             }
             System.out.println("encoding-done");
 
-//            for (byte single : bytes) {
-//                String s1 = String.format("%7s", Integer.toBinaryString(single & 0xFF)).replace(' ', '0');
-//                System.out.println(s1); // 10000001
-//                
-////                if(Byte.) {
-////                    
-////                }
-//            }
             for (int i = 0; i <= spot; i++) {
                 myWriter.write(bytes[i]);
             }
-//            myWriter.write(encodedString.toString());
 
             myWriter.close();
 
@@ -170,90 +203,7 @@ public class HuffmanMain extends javax.swing.JFrame {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
-    }//GEN-LAST:event_jButton1ActionPerformed
-
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-
-        String filePath = "./test-encoded.txt";
-
-        StringBuilder contentBuilder = new StringBuilder();
-        try (Stream<String> stream = Files.lines(Paths.get(filePath), StandardCharsets.UTF_8)) {
-            stream.forEach(s -> contentBuilder.append(s));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        String s = contentBuilder.toString();
-        int offset = 1;
-        int indexOfEncodingStart = s.indexOf("{") + offset;
-        int indexOfEncodingEnd = s.indexOf("}");
-
-        String charEncodingString = s.substring(indexOfEncodingStart, indexOfEncodingEnd);
-        String characterEncodingArray[] = charEncodingString.split(",");
-
-//        System.out.println(charEncodingString);
-
-        Map<String, String> encodingTable = new HashMap<>();
-
-        for (String keyValuePair : characterEncodingArray) {
-            String[] keyValue = keyValuePair.split("=");
-            encodingTable.put(keyValue[1], keyValue[0].length() > 1 ? keyValue[0].trim() : keyValue[0]);
-        }
-
-//        System.out.println(encodingTable);
-
-        String encodedContent = s.substring(indexOfEncodingEnd + offset);
-
-//        System.out.println(encodedContent);
-//        System.out.println(encodedContent.getBytes());
-
-        StringBuilder sb = new StringBuilder();
-
-        String manualEOF = "0000000";
-
-        for (byte single : encodedContent.getBytes()) {
-            String s1 = String.format("%7s", Integer.toBinaryString(single & 0xFF)).replace(' ', '0');
-
-            // manual override of eof, probably not correct
-//            System.out.println(s1.equals(manualEOF));
-            if (s1.equals(manualEOF) && !encodingTable.containsKey(manualEOF)) {
-                break;
-            }
-
-//            System.out.println(s1);
-            sb.append(s1);
-        }
-
-        String encodedStringLine = sb.toString();
-        StringBuilder decodedText = new StringBuilder();
-
-        System.out.println("decoding-start");
-        StringBuilder tempCodeString = new StringBuilder();
-        for (char encodedChar : encodedStringLine.toCharArray()) {
-            tempCodeString.append(encodedChar);
-
-            if (encodingTable.containsKey(tempCodeString.toString())) {
-                decodedText.append(encodingTable.get(tempCodeString.toString()));
-                tempCodeString = new StringBuilder();
-            }
-        }
-        System.out.println("decoding-end");
-
-//        System.out.println(decodedText.toString());
-        FileWriter myWriter;
-        try {
-            myWriter = new FileWriter("./test-decoded.txt");
-            myWriter.write(decodedText.toString());
-            myWriter.close();
-            System.out.println("CREATED DECODED FILE SUCCESFULLY");
-        } catch (Exception ex) {
-
-        }
-
-
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_compressButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -291,8 +241,8 @@ public class HuffmanMain extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
+    private javax.swing.JButton compressButton;
+    private javax.swing.JButton decompressButton;
     private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
 }

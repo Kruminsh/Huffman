@@ -27,39 +27,7 @@ public class HuffmanUtils {
 
         // @refactor
         StringBuilder contentBuilder = new StringBuilder();
-        try (Stream<String> stream = Files.lines(Paths.get(filePath), StandardCharsets.UTF_8)) {
-            stream.forEach(s -> contentBuilder.append(s).append("\n"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-//        try {
-//
-//            BufferedReader br = new BufferedReader(new FileReader(filePath));
-////            int c = br.readLine();
-//            contentBuilder.append((char)c);
-//        } catch (Exception ex) {
-//
-//        }
-
-        // read until end of file (EOF)
-//        try (Scanner scanner = new Scanner(new File(filePath))) {
-//            // read until end of file (EOF)
-//            while (scanner.hasNextLine()) {
-//                contentBuilder.append(scanner.nextLine());
-//                
-////                if(scanner.hasNextLine()) {
-////                    contentBuilder.append('\n');
-////                    contentBuilder.append('\r');
-////                } else {
-////                    
-////                }
-//            }
-//            // close the scanner
-//        } catch (Exception ex) {
-//
-//        }
-        
+        FileUtils.readFileIntoStringBuild(contentBuilder, filePath);
         
         String fullFileContent = contentBuilder.toString();
         Map<String, Integer> frequencyTable = new HashMap<>();
