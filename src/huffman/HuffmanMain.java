@@ -86,18 +86,18 @@ public class HuffmanMain extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void decompressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_decompressButtonActionPerformed
-        String filePath = "./test-encoded.txt";
+        String encodedFilePath = "./test-encoded.txt";
 
-        StringBuilder contentBuilder = new StringBuilder();
-        FileUtils.readFileIntoStringBuild(contentBuilder, filePath);
+        StringBuilder encodedFileContentBulder = new StringBuilder();
+        FileUtils.readFileIntoStringBuild(encodedFileContentBulder, encodedFilePath);
 
-        String s = contentBuilder.toString();
+        String encodedFileContent = encodedFileContentBulder.toString();
         int offset = 1;
-        int indexOfEncodingStart = s.indexOf("{") + offset;
-        int indexOfEncodingEnd = s.indexOf("}");
+        int indexOfEncodingTableStart = encodedFileContent.indexOf("{") + offset;
+        int indexOfEncodingTableEnd = encodedFileContent.indexOf("}");
 
-        String charEncodingString = s.substring(indexOfEncodingStart, indexOfEncodingEnd);
-        String characterEncodingArray[] = charEncodingString.split(",");
+        String encodingTableString = encodedFileContent.substring(indexOfEncodingTableStart, indexOfEncodingTableEnd);
+        String characterEncodingArray[] = encodingTableString.split(",");
 
         Map<String, Character> encodingTable = new HashMap<>();
 
@@ -109,31 +109,31 @@ public class HuffmanMain extends javax.swing.JFrame {
         
         System.out.println(encodingTable.toString());
 
-        String encodedContent = s.substring(indexOfEncodingEnd + offset);
+        String encodedContent = encodedFileContent.substring(indexOfEncodingTableEnd + offset);
         String manualEOF = "0000000";
 
-        StringBuilder sb = new StringBuilder();
+        StringBuilder byteStringBuilder = new StringBuilder();
         for (byte single : encodedContent.getBytes()) {
-            String s1 = String.format("%7s", Integer.toBinaryString(single & 0xFF)).replace(' ', '0');
+            String formatedStingByte = String.format("%7s", Integer.toBinaryString(single & 0xFF)).replace(' ', '0');
 
-            if (s1.equals(manualEOF) && !encodingTable.containsKey(manualEOF)) {
+            if (formatedStingByte.equals(manualEOF) && !encodingTable.containsKey(manualEOF)) {
                 break;
             }
 
-            sb.append(s1);
+            byteStringBuilder.append(formatedStingByte);
         }
 
-        String encodedStringLine = sb.toString();
-        StringBuilder decodedText = new StringBuilder();
+        encodedContent = byteStringBuilder.toString();
+        StringBuilder decodedTextBuilder = new StringBuilder();
 
         System.out.println("decoding-start");
-        StringBuilder tempCodeString = new StringBuilder();
-        for (char encodedChar : encodedStringLine.toCharArray()) {
-            tempCodeString.append(encodedChar);
+        StringBuilder encodedByteBuilder = new StringBuilder();
+        for (char encodedChar : encodedContent.toCharArray()) {
+            encodedByteBuilder.append(encodedChar);
 
-            if (encodingTable.containsKey(tempCodeString.toString())) {
-                decodedText.append(encodingTable.get(tempCodeString.toString()));
-                tempCodeString = new StringBuilder();
+            if (encodingTable.containsKey(encodedByteBuilder.toString())) {
+                decodedTextBuilder.append(encodingTable.get(encodedByteBuilder.toString()));
+                encodedByteBuilder = new StringBuilder();
             }
         }
         System.out.println("decoding-end");
@@ -141,7 +141,7 @@ public class HuffmanMain extends javax.swing.JFrame {
         FileWriter myWriter;
         try {
             myWriter = new FileWriter("./test-decoded.txt");
-            myWriter.write(decodedText.toString());
+            myWriter.write(decodedTextBuilder.toString());
             myWriter.close();
             System.out.println("CREATED DECODED FILE SUCCESFULLY");
         } catch (Exception ex) {
