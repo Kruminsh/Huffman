@@ -88,64 +88,33 @@ public class HuffmanMain extends javax.swing.JFrame {
     private void decompressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_decompressButtonActionPerformed
         String encodedFilePath = "./test-encoded.txt";
 
-        StringBuilder encodedFileContentBulder = new StringBuilder();
-        FileUtils.readFileIntoStringBuild(encodedFileContentBulder, encodedFilePath);
+        StringBuilder encodedFileContentBuilder = new StringBuilder();
+        FileUtils.readFileIntoStringBuild(encodedFileContentBuilder, encodedFilePath);
 
-        String encodedFileContent = encodedFileContentBulder.toString();
-        int offset = 1;
-        int indexOfEncodingTableStart = encodedFileContent.indexOf("{") + offset;
+        String encodedFileContent = encodedFileContentBuilder.toString();
+        int stringOffset = 1;
+        int indexOfEncodingTableStart = encodedFileContent.indexOf("{") + stringOffset;
         int indexOfEncodingTableEnd = encodedFileContent.indexOf("}");
-
         String encodingTableString = encodedFileContent.substring(indexOfEncodingTableStart, indexOfEncodingTableEnd);
-        String characterEncodingArray[] = encodingTableString.split(",");
 
-        Map<String, Character> encodingTable = new HashMap<>();
+        Map<String, Character> encodingMap = HuffmanUtils.buildEncodingMapFromFile(encodingTableString);
+        System.out.println(encodingMap.toString());
 
-        for (String keyValuePair : characterEncodingArray) {
-            String[] keyValue = keyValuePair.split("=");
-            int asciiCode= Integer.valueOf(keyValue[0]);
-            encodingTable.put(keyValue[1], (char) asciiCode );
-        }
-        
-        System.out.println(encodingTable.toString());
-
-        String encodedContent = encodedFileContent.substring(indexOfEncodingTableEnd + offset);
-        String manualEOF = "0000000";
-
-        StringBuilder byteStringBuilder = new StringBuilder();
-        for (byte single : encodedContent.getBytes()) {
-            String formatedStingByte = String.format("%7s", Integer.toBinaryString(single & 0xFF)).replace(' ', '0');
-
-            if (formatedStingByte.equals(manualEOF) && !encodingTable.containsKey(manualEOF)) {
-                break;
-            }
-
-            byteStringBuilder.append(formatedStingByte);
-        }
-
-        encodedContent = byteStringBuilder.toString();
-        StringBuilder decodedTextBuilder = new StringBuilder();
+        String encodedContent = encodedFileContent.substring(indexOfEncodingTableEnd + stringOffset);
+        encodedContent = HuffmanUtils.byteContentToStringBytes(encodedContent, encodingMap);
 
         System.out.println("decoding-start");
-        StringBuilder encodedByteBuilder = new StringBuilder();
-        for (char encodedChar : encodedContent.toCharArray()) {
-            encodedByteBuilder.append(encodedChar);
-
-            if (encodingTable.containsKey(encodedByteBuilder.toString())) {
-                decodedTextBuilder.append(encodingTable.get(encodedByteBuilder.toString()));
-                encodedByteBuilder = new StringBuilder();
-            }
-        }
+        String decodedText = HuffmanUtils.decodeFileContent(encodedContent, encodingMap);
         System.out.println("decoding-end");
 
         FileWriter myWriter;
         try {
             myWriter = new FileWriter("./test-decoded.txt");
-            myWriter.write(decodedTextBuilder.toString());
+            myWriter.write(decodedText);
             myWriter.close();
             System.out.println("CREATED DECODED FILE SUCCESFULLY");
         } catch (Exception ex) {
-
+            ex.printStackTrace();
         }
 
 
@@ -170,8 +139,8 @@ public class HuffmanMain extends javax.swing.JFrame {
 
         try (FileWriter myWriter = new FileWriter("./test-encoded.txt")) {
             StringBuilder fileContent = new StringBuilder();
-            FileUtils.readFileIntoStringBuild(fileContent, filePath);            
-            
+            FileUtils.readFileIntoStringBuild(fileContent, filePath);
+
             String encodedString = HuffmanUtils.encodeFileContentByCodeMap(fileContent, codeMap);
 
             HuffmanUtils.writeCodeMapToFile(myWriter, codeMap);

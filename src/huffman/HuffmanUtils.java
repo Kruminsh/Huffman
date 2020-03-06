@@ -175,4 +175,50 @@ public class HuffmanUtils {
 
         return encodedContent.toString();
     }
+
+    public static Map<String, Character> buildEncodingMapFromFile(String encodingTableString) {
+        String characterEncodingArray[] = encodingTableString.split(",");
+        
+        Map<String, Character> encodingMap = new HashMap<>();
+
+        for (String keyValuePair : characterEncodingArray) {
+            String[] keyValue = keyValuePair.split("=");
+            int asciiCode= Integer.valueOf(keyValue[0]);
+            encodingMap.put(keyValue[1], (char) asciiCode );
+        }
+        
+        return encodingMap;
+    }
+
+    public static String byteContentToStringBytes(String encodedContent, Map<String,Character> encodingMap) {
+        String manualEOF = "0000000";
+
+        StringBuilder byteStringBuilder = new StringBuilder();
+        for (byte single : encodedContent.getBytes()) {
+            String formatedStingByte = String.format("%7s", Integer.toBinaryString(single & 0xFF)).replace(' ', '0');
+
+            if (formatedStingByte.equals(manualEOF) && !encodingMap.containsKey(manualEOF)) {
+                break;
+            }
+
+            byteStringBuilder.append(formatedStingByte);
+        }
+
+        return byteStringBuilder.toString();
+    }
+
+    public static String decodeFileContent(String encodedContent, Map<String, Character> encodingMap) {
+        StringBuilder decodedTextBuilder = new StringBuilder();
+        StringBuilder encodedByteBuilder = new StringBuilder();
+        for (char encodedChar : encodedContent.toCharArray()) {
+            encodedByteBuilder.append(encodedChar);
+
+            if (encodingMap.containsKey(encodedByteBuilder.toString())) {
+                decodedTextBuilder.append(encodingMap.get(encodedByteBuilder.toString()));
+                encodedByteBuilder = new StringBuilder();
+            }
+        }
+        
+        return decodedTextBuilder.toString();
+    }
 }
