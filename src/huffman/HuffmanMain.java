@@ -99,12 +99,15 @@ public class HuffmanMain extends javax.swing.JFrame {
         String charEncodingString = s.substring(indexOfEncodingStart, indexOfEncodingEnd);
         String characterEncodingArray[] = charEncodingString.split(",");
 
-        Map<String, String> encodingTable = new HashMap<>();
+        Map<String, Character> encodingTable = new HashMap<>();
 
         for (String keyValuePair : characterEncodingArray) {
             String[] keyValue = keyValuePair.split("=");
-            encodingTable.put(keyValue[1], keyValue[0].length() > 1 ? keyValue[0].trim() : keyValue[0]);
+            int asciiCode= Integer.valueOf(keyValue[0]);
+            encodingTable.put(keyValue[1], (char) asciiCode );
         }
+        
+        System.out.println(encodingTable.toString());
 
         String encodedContent = s.substring(indexOfEncodingEnd + offset);
         String manualEOF = "0000000";
