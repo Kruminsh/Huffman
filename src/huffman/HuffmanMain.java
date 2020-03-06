@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -107,12 +108,13 @@ public class HuffmanMain extends javax.swing.JFrame {
         String decodedText = HuffmanUtils.decodeFileContent(encodedContent, encodingMap);
         System.out.println("decoding-end");
 
-        FileWriter myWriter;
-        try {
-            myWriter = new FileWriter("./test-decoded.txt");
+        File decodedFile = new File("./test-decoded.txt");
+        try ( FileWriter myWriter = new FileWriter(decodedFile)) {
             myWriter.write(decodedText);
-            myWriter.close();
-            System.out.println("CREATED DECODED FILE SUCCESFULLY");
+            
+            String successMsg = "CREATED DECODED FILE SUCCESFULLY\n"+decodedFile.getCanonicalPath();
+            JOptionPane.showMessageDialog(this, successMsg);
+            System.out.println(successMsg);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -137,7 +139,8 @@ public class HuffmanMain extends javax.swing.JFrame {
 
         System.out.println(codeMap);
 
-        try (FileWriter myWriter = new FileWriter("./test-encoded.txt")) {
+        File encodedFile = new File("./test-encoded.txt");
+        try (FileWriter myWriter = new FileWriter(encodedFile)) {
             StringBuilder fileContent = new StringBuilder();
             FileUtils.readFileIntoStringBuild(fileContent, filePath);
 
@@ -146,7 +149,10 @@ public class HuffmanMain extends javax.swing.JFrame {
             HuffmanUtils.writeCodeMapToFile(myWriter, codeMap);
             HuffmanUtils.writeEncodedStringToFile(myWriter, encodedString);
 
-            System.out.println("ENCODED FILE SUCCESSFULLY");
+            String successMsg = "ENCODED FILE SUCCESSFULLY\n"+encodedFile.getCanonicalPath();
+            JOptionPane.showMessageDialog(this, successMsg);
+            System.out.println(successMsg);
+            
         } catch (IOException e) {
             e.printStackTrace();
         }
