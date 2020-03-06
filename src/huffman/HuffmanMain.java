@@ -107,7 +107,7 @@ public class HuffmanMain extends javax.swing.JFrame {
         }
 
         String encodedContent = s.substring(indexOfEncodingEnd + offset);
-String manualEOF = "0000000";
+        String manualEOF = "0000000";
 
         StringBuilder sb = new StringBuilder();
         for (byte single : encodedContent.getBytes()) {
@@ -151,7 +151,6 @@ String manualEOF = "0000000";
     private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compressButtonActionPerformed
         String filePath = jTextField1.getText();
         filePath = "./test.txt";
-        File fileToCompress = new File(filePath);
 
         Map<String, Integer> table = HuffmanUtils.buildFrequencyTable(filePath);
 
@@ -166,38 +165,14 @@ String manualEOF = "0000000";
 
         System.out.println(codeMap);
 
-        try {
-            FileWriter myWriter = new FileWriter("./test-encoded.txt");
+        try (FileWriter myWriter = new FileWriter("./test-encoded.txt")) {
+            StringBuilder fileContent = new StringBuilder();
+            FileUtils.readFileIntoStringBuild(fileContent, filePath);            
+            
+            String encodedString = HuffmanUtils.encodeFileContentByCodeMap(fileContent, codeMap);
 
-            StringBuilder contentBuilder = new StringBuilder();
-            FileUtils.readFileIntoStringBuild(contentBuilder, filePath);
-
-            StringBuilder encodedString = new StringBuilder();
-            for (char c : contentBuilder.toString().toCharArray()) {
-                encodedString.append(codeMap.get(c));
-            }
-
-            myWriter.write(codeMap.toString());
-
-            String bin = encodedString.toString();
-
-            int spot = 0;
-            byte[] bytes = new byte[256];
-
-            System.out.println("encoding");
-            for (int i = 0; bin.length() > 7; i++) {
-                String temp = bin.substring(0, 7);
-                bin = bin.substring(7, bin.length());
-                bytes[spot] = Byte.parseByte(temp, 2);
-                spot++;
-            }
-            System.out.println("encoding-done");
-
-            for (int i = 0; i <= spot; i++) {
-                myWriter.write(bytes[i]);
-            }
-
-            myWriter.close();
+            HuffmanUtils.writeCodeMapToFile(myWriter, codeMap);
+            HuffmanUtils.writeEncodedStringToFile(myWriter, encodedString);
 
             System.out.println("ENCODED FILE SUCCESSFULLY");
         } catch (IOException e) {

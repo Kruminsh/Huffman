@@ -5,6 +5,8 @@
  */
 package huffman;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -28,7 +30,7 @@ public class HuffmanUtils {
         // @refactor
         StringBuilder contentBuilder = new StringBuilder();
         FileUtils.readFileIntoStringBuild(contentBuilder, filePath);
-        
+
         String fullFileContent = contentBuilder.toString();
         Map<String, Integer> frequencyTable = new HashMap<>();
 
@@ -103,7 +105,7 @@ public class HuffmanUtils {
             HuffmanNode f = new HuffmanNode();
 
             f.frequency = x.frequency + y.frequency;
-            f.character = '-';
+            f.character = Character.MIN_VALUE;
 
             f.zero = x;
             f.one = y;
@@ -116,9 +118,9 @@ public class HuffmanUtils {
         return root;
     }
 
-    static void buildEncodingMap(HuffmanNode root, String s, Map<Character,String> codeMap) {
-                
-        if (Character.isLetter(root.character) || root.character == ' ' || root.character == '\n') {
+    static void buildEncodingMap(HuffmanNode root, String s, Map<Character, String> codeMap) {
+
+        if (root.character != Character.MIN_VALUE) {
             codeMap.put(root.character, s);
         }
 
@@ -129,6 +131,48 @@ public class HuffmanUtils {
         if (root.one != null) {
             buildEncodingMap(root.one, s + "1", codeMap);
         }
-        
+
+    }
+
+    public static void writeCodeMapToFile(FileWriter myWriter, Map<Character, String> codeMap) throws IOException {
+        myWriter.write("{");
+        int mapCounter = 0;
+        int mapLength = codeMap.size();
+        for (Map.Entry<Character, String> entry : codeMap.entrySet()) {
+            Character key = entry.getKey();
+            String value = entry.getValue();
+
+            mapCounter++;
+
+            myWriter.write((int) key + "=" + value + (mapCounter != mapLength ? "," : ""));
+        }
+        myWriter.write("}");
+    }
+
+    static void writeEncodedStringToFile(FileWriter myWriter, String encodedString) throws IOException {
+        int spot = 0;
+        byte[] bytes = new byte[256];
+
+        System.out.println("encoding");
+        for (int i = 0; encodedString.length() > 7; i++) {
+            String temp = encodedString.substring(0, 7);
+            encodedString = encodedString.substring(7, encodedString.length());
+            bytes[spot] = Byte.parseByte(temp, 2);
+            spot++;
+        }
+        System.out.println("encoding-done");
+
+        for (int i = 0; i <= spot; i++) {
+            myWriter.write(bytes[i]);
+        }
+    }
+
+    public static String encodeFileContentByCodeMap(StringBuilder fileContent, Map<Character, String> codeMap) {
+        StringBuilder encodedContent = new StringBuilder();
+        for (char c : fileContent.toString().toCharArray()) {
+            encodedContent.append(codeMap.get(c));
+        }
+
+        return encodedContent.toString();
     }
 }
