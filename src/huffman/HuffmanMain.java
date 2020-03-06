@@ -93,15 +93,15 @@ public class HuffmanMain extends javax.swing.JFrame {
         FileUtils.readFileIntoStringBuild(encodedFileContentBuilder, encodedFilePath);
 
         String encodedFileContent = encodedFileContentBuilder.toString();
-        int stringOffset = 1;
-        int indexOfEncodingTableStart = encodedFileContent.indexOf("{") + stringOffset;
+        int substringStartOffset = 1;
+        int indexOfEncodingTableStart = encodedFileContent.indexOf("{");
         int indexOfEncodingTableEnd = encodedFileContent.indexOf("}");
-        String encodingTableString = encodedFileContent.substring(indexOfEncodingTableStart, indexOfEncodingTableEnd);
+        String encodingTableString = encodedFileContent.substring(indexOfEncodingTableStart+ substringStartOffset, indexOfEncodingTableEnd);
 
         Map<String, Character> encodingMap = HuffmanUtils.buildEncodingMapFromFile(encodingTableString);
         System.out.println(encodingMap.toString());
 
-        String encodedContent = encodedFileContent.substring(indexOfEncodingTableEnd + stringOffset);
+        String encodedContent = encodedFileContent.substring(indexOfEncodingTableEnd + substringStartOffset);
         encodedContent = HuffmanUtils.byteContentToStringBytes(encodedContent, encodingMap);
 
         System.out.println("decoding-start");
