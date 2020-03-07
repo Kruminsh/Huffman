@@ -24,16 +24,4 @@ public class HuffmanNode {
         this.character = character;
         this.frequency = frequency;
     }
-
-    public void add(char charater, int frequency) {
-        if (this.zero == null) {
-            zero = new HuffmanNode();
-            zero.character = charater;
-            zero.frequency = frequency;
-        } else {
-            one = new HuffmanNode();
-            one.character = charater;
-            one.frequency = frequency;
-        }
-    }
 }
