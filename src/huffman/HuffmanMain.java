@@ -11,7 +11,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  *
@@ -19,6 +22,7 @@ import javax.swing.JOptionPane;
  */
 public class HuffmanMain extends javax.swing.JFrame {
 
+    
     /**
      * Creates new form HuffmanMain
      */
@@ -36,12 +40,15 @@ public class HuffmanMain extends javax.swing.JFrame {
     private void initComponents() {
 
         compressButton = new javax.swing.JButton();
-        jTextField1 = new javax.swing.JTextField();
+        filePathField = new javax.swing.JTextField();
         decompressButton = new javax.swing.JButton();
+        chooseFileButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Huffman encoder / decoder");
 
         compressButton.setText("Compress File");
+        compressButton.setEnabled(false);
         compressButton.setName(""); // NOI18N
         compressButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -49,12 +56,21 @@ public class HuffmanMain extends javax.swing.JFrame {
             }
         });
 
-        jTextField1.setEnabled(false);
+        filePathField.setEditable(false);
 
         decompressButton.setText("Decompress File");
+        decompressButton.setEnabled(false);
         decompressButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 decompressButtonActionPerformed(evt);
+            }
+        });
+
+        chooseFileButton.setText("Choose File");
+        chooseFileButton.setActionCommand("chooseFileButton");
+        chooseFileButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chooseFileButtonActionPerformed(evt);
             }
         });
 
@@ -64,8 +80,13 @@ public class HuffmanMain extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(filePathField, javax.swing.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(chooseFileButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(compressButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(decompressButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -75,11 +96,13 @@ public class HuffmanMain extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(49, Short.MAX_VALUE)
-                .addComponent(decompressButton)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(decompressButton)
+                    .addComponent(chooseFileButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(compressButton)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(filePathField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -87,8 +110,8 @@ public class HuffmanMain extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void decompressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_decompressButtonActionPerformed
-        String encodedFilePath = "./test-encoded.txt";
-
+        String encodedFilePath = filePathField.getText();
+           
         StringBuilder encodedFileContentBuilder = new StringBuilder();
         FileUtils.readFileIntoStringBuild(encodedFileContentBuilder, encodedFilePath);
 
@@ -108,7 +131,7 @@ public class HuffmanMain extends javax.swing.JFrame {
         String decodedText = HuffmanUtils.decodeFileContent(encodedContent, encodingMap);
         System.out.println("decoding-end");
 
-        File decodedFile = new File("./test-decoded.txt");
+        File decodedFile = new File("./file-decoded.txt");
         try ( FileWriter myWriter = new FileWriter(decodedFile)) {
             myWriter.write(decodedText);
             
@@ -118,13 +141,10 @@ public class HuffmanMain extends javax.swing.JFrame {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-
-
     }//GEN-LAST:event_decompressButtonActionPerformed
 
     private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compressButtonActionPerformed
-        String filePath = jTextField1.getText();
-        filePath = "./test.txt";
+        String filePath = filePathField.getText();
 
         Map<String, Integer> table = HuffmanUtils.buildFrequencyTable(filePath);
 
@@ -139,7 +159,7 @@ public class HuffmanMain extends javax.swing.JFrame {
 
         System.out.println(codeMap);
 
-        File encodedFile = new File("./test-encoded.txt");
+        File encodedFile = new File("./file-encoded.huf");
         try (FileWriter myWriter = new FileWriter(encodedFile)) {
             StringBuilder fileContent = new StringBuilder();
             FileUtils.readFileIntoStringBuild(fileContent, filePath);
@@ -157,6 +177,34 @@ public class HuffmanMain extends javax.swing.JFrame {
             e.printStackTrace();
         }
     }//GEN-LAST:event_compressButtonActionPerformed
+
+    private void chooseFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseFileButtonActionPerformed
+        JFileChooser fileChooser = new JFileChooser();
+        FileFilter filter = new FileNameExtensionFilter("Text / Huffman files", "txt", "huf");
+        fileChooser.setAcceptAllFileFilterUsed(false);
+        fileChooser.setFileFilter(filter);
+        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+           File file = fileChooser.getSelectedFile();
+           String filePath = file.getAbsolutePath();
+           String fileExtension = FileUtils.getExtension(filePath);
+           filePathField.setText(filePath);   
+           switch (fileExtension) {
+               case "txt":
+                   decompressButton.setEnabled(false);
+                   compressButton.setEnabled(true);
+               break;
+               case "huf":
+                   decompressButton.setEnabled(true);
+                   compressButton.setEnabled(false);
+               break;
+               default:
+                   decompressButton.setEnabled(false);
+                   compressButton.setEnabled(false);
+                   break;
+           }
+   
+        }      
+    }//GEN-LAST:event_chooseFileButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -194,8 +242,9 @@ public class HuffmanMain extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton chooseFileButton;
     private javax.swing.JButton compressButton;
     private javax.swing.JButton decompressButton;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JTextField filePathField;
     // End of variables declaration//GEN-END:variables
 }

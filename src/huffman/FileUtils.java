@@ -22,4 +22,13 @@ public class FileUtils {
             e.printStackTrace();
         }       
     }
+    
+    public static String getExtension(String fileName) {
+        String extension = "";
+        int index = fileName.lastIndexOf('.');
+        if (index >= 0) {
+            extension = fileName.substring(index + 1);
+        }
+        return extension;
+    }
 }
