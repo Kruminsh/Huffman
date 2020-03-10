@@ -5,12 +5,20 @@
  */
 package huffman;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.stream.Collectors;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
@@ -111,46 +119,61 @@ public class HuffmanMain extends javax.swing.JFrame {
 
     private void decompressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_decompressButtonActionPerformed
         String encodedFilePath = filePathField.getText();
-           
+        
         StringBuilder encodedFileContentBuilder = new StringBuilder();
         FileUtils.readFileIntoStringBuild(encodedFileContentBuilder, encodedFilePath);
-
         String encodedFileContent = encodedFileContentBuilder.toString();
+        
         int substringStartOffset = 1;
         int indexOfEncodingTableStart = encodedFileContent.indexOf("{");
         int indexOfEncodingTableEnd = encodedFileContent.indexOf("}");
+        
         String encodingTableString = encodedFileContent.substring(indexOfEncodingTableStart+ substringStartOffset, indexOfEncodingTableEnd);
+        Map<String, Integer> freqTable = HuffmanUtils.buildFrequencyTableFromFile(encodingTableString);
+        PriorityQueue<HuffmanNode> queue = HuffmanUtils.buildPriorityQueue(freqTable);
+        
+        HuffmanNode root = HuffmanUtils.buildEncodingTree(queue);
 
-        Map<String, Character> encodingMap = HuffmanUtils.buildEncodingMapFromFile(encodingTableString);
-        System.out.println(encodingMap.toString());
-
-        String encodedContent = encodedFileContent.substring(indexOfEncodingTableEnd + substringStartOffset);
-        encodedContent = HuffmanUtils.byteContentToStringBytes(encodedContent, encodingMap);
-
-        System.out.println("decoding-start");
-        String decodedText = HuffmanUtils.decodeFileContent(encodedContent, encodingMap);
-        System.out.println("decoding-end");
-
-        File decodedFile = new File("./file-decoded.txt");
-        try ( FileWriter myWriter = new FileWriter(decodedFile)) {
-            myWriter.write(decodedText);
+        Map<Character, String> codeMap = new HashMap<>();
+        HuffmanUtils.buildEncodingMap(root, "", codeMap);
+        
+        System.out.println(codeMap.toString());
+        Map<String, Character> encodingMap = codeMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
+        
+        try {
+            File file = new File(encodedFilePath);
+            byte[] fileContent = Files.readAllBytes(file.toPath());           
+            byte[] freqTableBytes = ("{" + encodingTableString + "}").getBytes(); //Bytes that take up frequency table in the file
             
-            String successMsg = "CREATED DECODED FILE SUCCESFULLY\n"+decodedFile.getCanonicalPath();
-            JOptionPane.showMessageDialog(this, successMsg);
-            System.out.println(successMsg);
-        } catch (Exception ex) {
+            String encodedContent = HuffmanUtils.byteContentToStringBytes(fileContent, encodingMap, freqTableBytes.length);
+            
+            System.out.println("decoding-start");
+            String decodedText = HuffmanUtils.decodeFileContent(encodedContent, encodingMap);
+            System.out.println("decoding-end");
+            
+            File decodedFile = new File("./file-decoded.txt");
+            try ( FileWriter myWriter = new FileWriter(decodedFile)) {
+
+                myWriter.write(decodedText);
+
+                String successMsg = "CREATED DECODED FILE SUCCESFULLY\n"+decodedFile.getCanonicalPath();
+                JOptionPane.showMessageDialog(this, successMsg);
+                System.out.println(successMsg);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        } catch (Exception ex){
             ex.printStackTrace();
         }
     }//GEN-LAST:event_decompressButtonActionPerformed
 
     private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compressButtonActionPerformed
         String filePath = filePathField.getText();
+        Map<String, Integer> freqTable = HuffmanUtils.buildFrequencyTable(filePath);
+        
+        System.out.println(freqTable);
 
-        Map<String, Integer> table = HuffmanUtils.buildFrequencyTable(filePath);
-
-        System.out.println(table);
-
-        PriorityQueue<HuffmanNode> queue = HuffmanUtils.buildPriorityQueue(table);
+        PriorityQueue<HuffmanNode> queue = HuffmanUtils.buildPriorityQueue(freqTable);
 
         HuffmanNode root = HuffmanUtils.buildEncodingTree(queue);
 
@@ -165,11 +188,11 @@ public class HuffmanMain extends javax.swing.JFrame {
             FileUtils.readFileIntoStringBuild(fileContent, filePath);
 
             String encodedString = HuffmanUtils.encodeFileContentByCodeMap(fileContent, codeMap);
-
-            HuffmanUtils.writeCodeMapToFile(myWriter, codeMap);
+            
+            HuffmanUtils.writeCodeMapToFile(myWriter, freqTable);
             HuffmanUtils.writeEncodedStringToFile(myWriter, encodedString);
 
-            String successMsg = "ENCODED FILE SUCCESSFULLY\n"+encodedFile.getCanonicalPath();
+            String successMsg = "ENCODED FILE SUCCESSFULLY\n" + encodedFile.getCanonicalPath();
             JOptionPane.showMessageDialog(this, successMsg);
             System.out.println(successMsg);
             

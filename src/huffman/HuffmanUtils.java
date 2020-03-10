@@ -7,23 +7,15 @@ package huffman;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.PriorityQueue;
+import java.util.TreeMap;
 
-/**
- *
- * @author arturs vitolins
- */
 public class HuffmanUtils {
 
     public static Map<String, Integer> buildFrequencyTable(String filePath) {
-
-        // @refactor
         StringBuilder contentBuilder = new StringBuilder();
         FileUtils.readFileIntoStringBuild(contentBuilder, filePath);
 
@@ -42,20 +34,21 @@ public class HuffmanUtils {
 
             frequencyTable.put(tempString, frequency);
         }
-
-        return HuffmanUtils.sortByValue(frequencyTable);
+        return new TreeMap<String, Integer>(frequencyTable);
     }
+    
+    public static Map<String, Integer> buildFrequencyTableFromFile(String encodingTableString) {
+        String characterEncodingArray[] = encodingTableString.split(",");
+        
+        Map<String, Integer> freqTable = new HashMap<>();
 
-    public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
-        List<Entry<K, V>> list = new ArrayList<>(map.entrySet());
-        list.sort(Entry.comparingByValue());
-
-        Map<K, V> result = new LinkedHashMap<>();
-        list.forEach((entry) -> {
-            result.put(entry.getKey(), entry.getValue());
-        });
-
-        return result;
+        for (String keyValuePair : characterEncodingArray) {
+            String[] keyValue = keyValuePair.split("=");
+            int asciiCode = Integer.valueOf(keyValue[0]);
+            freqTable.put(String.valueOf((char)asciiCode), Integer.valueOf(keyValue[1]));
+        }
+        
+        return new TreeMap<String, Integer>(freqTable);
     }
 
     public static void printCode(HuffmanNode root, String s) {
@@ -78,7 +71,7 @@ public class HuffmanUtils {
         PriorityQueue<HuffmanNode> queue = new PriorityQueue(table.size(), new HuffmanComperator());
 
         table.entrySet().forEach((entry) -> {
-            char charater = entry.getKey().toCharArray()[0];
+            char charater = entry.getKey().charAt(0);
             Integer frequency = entry.getValue();
 
             queue.add(new HuffmanNode(charater, frequency));
@@ -130,17 +123,14 @@ public class HuffmanUtils {
 
     }
 
-    public static void writeCodeMapToFile(FileWriter myWriter, Map<Character, String> codeMap) throws IOException {
+    public static void writeCodeMapToFile(FileWriter myWriter, Map<String, Integer> freqTable) throws IOException {
         myWriter.write("{");
         int mapCounter = 0;
-        int mapLength = codeMap.size();
-        for (Map.Entry<Character, String> entry : codeMap.entrySet()) {
-            Character key = entry.getKey();
-            String value = entry.getValue();
-
+        int mapLength = freqTable.size();
+        for (Map.Entry<String, Integer> entry : freqTable.entrySet()) {
             mapCounter++;
 
-            myWriter.write((int) key + "=" + value + (mapCounter != mapLength ? "," : ""));
+            myWriter.write((int)entry.getKey().charAt(0) + "=" + entry.getValue() + (mapCounter != mapLength ? "," : ""));
         }
         myWriter.write("}");
     }
@@ -148,7 +138,7 @@ public class HuffmanUtils {
     static void writeEncodedStringToFile(FileWriter myWriter, String encodedString) throws IOException {
         int spot = 0;
         byte[] bytes = new byte[256];
-
+        
         System.out.println("encoding");
         for (int i = 0; encodedString.length() > 7; i++) {
             String temp = encodedString.substring(0, 7);
@@ -186,17 +176,11 @@ public class HuffmanUtils {
         return encodingMap;
     }
 
-    public static String byteContentToStringBytes(String encodedContent, Map<String,Character> encodingMap) {
-        String manualEOF = "0000000";
-
+    public static String byteContentToStringBytes(byte[] encodedContent, Map<String,Character> encodingMap, int freqByteLength) {
         StringBuilder byteStringBuilder = new StringBuilder();
-        for (byte single : encodedContent.getBytes()) {
+        for (int i = freqByteLength; i < encodedContent.length; i++) {
+            byte single = encodedContent[i];
             String formatedStingByte = String.format("%7s", Integer.toBinaryString(single & 0xFF)).replace(' ', '0');
-
-            if (formatedStingByte.equals(manualEOF) && !encodingMap.containsKey(manualEOF)) {
-                break;
-            }
-
             byteStringBuilder.append(formatedStingByte);
         }
 
@@ -214,7 +198,7 @@ public class HuffmanUtils {
                 encodedByteBuilder = new StringBuilder();
             }
         }
-        
-        return decodedTextBuilder.toString();
+        String decodedText = decodedTextBuilder.toString();
+        return decodedText.substring(0, decodedText.length() - 1);
     }
 }
