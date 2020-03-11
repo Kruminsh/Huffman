@@ -113,52 +113,12 @@ public class HuffmanMain extends javax.swing.JFrame {
 
     private void decompressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_decompressButtonActionPerformed
         String encodedFilePath = filePathField.getText();
+        File encodedFile = new File(encodedFilePath);
         
-        StringBuilder encodedFileContentBuilder = new StringBuilder();
-        FileUtils.readFileIntoStringBuild(encodedFileContentBuilder, encodedFilePath);
-        String encodedFileContent = encodedFileContentBuilder.toString();
-        
-        int substringStartOffset = 1;
-        int indexOfEncodingTableStart = encodedFileContent.indexOf("{");
-        int indexOfEncodingTableEnd = encodedFileContent.indexOf("}");
-        
-        String encodingTableString = encodedFileContent.substring(indexOfEncodingTableStart+ substringStartOffset, indexOfEncodingTableEnd);
-        Map<String, Integer> freqTable = HuffmanUtils.buildFrequencyTableFromFile(encodingTableString);
-        PriorityQueue<HuffmanNode> queue = HuffmanUtils.buildPriorityQueue(freqTable);
-        
-        HuffmanNode root = HuffmanUtils.buildEncodingTree(queue);
-
-        Map<Character, String> codeMap = new HashMap<>();
-        HuffmanUtils.buildEncodingMap(root, "", codeMap);
-        
-        System.out.println(codeMap.toString());
-        Map<String, Character> encodingMap = codeMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
-        
-        try {
-            File file = new File(encodedFilePath);
-            byte[] fileContent = Files.readAllBytes(file.toPath());           
-            byte[] freqTableBytes = ("{" + encodingTableString + "}").getBytes(); //Bytes that take up frequency table in the file
-            
-            String encodedContent = HuffmanUtils.byteContentToStringBytes(fileContent, encodingMap, freqTableBytes.length);
-            
-            System.out.println("decoding-start");
-            String decodedText = HuffmanUtils.decodeFileContent(encodedContent, encodingMap);
-            System.out.println("decoding-end");
-            
-            File decodedFile = new File("./file-decoded.txt");
-            try ( FileWriter myWriter = new FileWriter(decodedFile)) {
-
-                myWriter.write(decodedText);
-
-                String successMsg = "CREATED DECODED FILE SUCCESFULLY\n"+decodedFile.getCanonicalPath();
-                JOptionPane.showMessageDialog(this, successMsg);
-                System.out.println(successMsg);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        } catch (Exception ex){
-            ex.printStackTrace();
-        }
+        HuffmanCoding huffman = new HuffmanCoding();
+        huffman.decode(encodedFile);
+        JOptionPane.showMessageDialog(this, huffman.outputMessage);
+        System.out.println(huffman.outputMessage); 
     }//GEN-LAST:event_decompressButtonActionPerformed
 
     private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compressButtonActionPerformed
