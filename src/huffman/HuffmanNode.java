@@ -5,9 +5,8 @@
  */
 package huffman;
 
-/**
- *
- * @author arturs vitolins
+/*
+ *  Huffman Node class
  */
 public class HuffmanNode {
 

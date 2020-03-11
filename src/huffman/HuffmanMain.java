@@ -11,9 +11,9 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-/**
- *
- * @author arturs vitolins
+/*
+ *  Main class
+ *  Contains form element event code
  */
 public class HuffmanMain extends javax.swing.JFrame {
 
@@ -103,7 +103,10 @@ public class HuffmanMain extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
+    
+    /*
+    *  Decompress button action event
+    */
     private void decompressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_decompressButtonActionPerformed
         String encodedFilePath = filePathField.getText();
         File encodedFile = new File(encodedFilePath);
@@ -113,7 +116,10 @@ public class HuffmanMain extends javax.swing.JFrame {
         JOptionPane.showMessageDialog(this, huffman.outputMessage);
         System.out.println(huffman.outputMessage); 
     }//GEN-LAST:event_decompressButtonActionPerformed
-
+    
+    /*
+    *  Compress button action event
+    */
     private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compressButtonActionPerformed
         String filePath = filePathField.getText();
         File file = new File(filePath);
@@ -123,7 +129,10 @@ public class HuffmanMain extends javax.swing.JFrame {
         JOptionPane.showMessageDialog(this, huffman.outputMessage);
         System.out.println(huffman.outputMessage); 
     }//GEN-LAST:event_compressButtonActionPerformed
-
+    
+    /*
+    *  Choose file button action event
+    */
     private void chooseFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseFileButtonActionPerformed
         JFileChooser fileChooser = new JFileChooser();
         FileFilter filter = new FileNameExtensionFilter("Text / Huffman files", "txt", "huf");

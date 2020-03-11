@@ -10,10 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
-/**
- *
- * @author Arccuks
- */
 public class FileUtils {
     public static void readFileIntoStringBuild(StringBuilder sb, String filePath) {
         try (Stream<String> stream = Files.lines(Paths.get(filePath), StandardCharsets.UTF_8)) {

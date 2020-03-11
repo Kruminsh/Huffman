@@ -7,10 +7,6 @@ package huffman;
 
 import java.util.Comparator;
 
-/**
- *
- * @author Arccuks
- */
 public class HuffmanComperator implements Comparator<HuffmanNode> {
 
     @Override

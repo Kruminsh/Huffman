@@ -15,13 +15,12 @@ import java.util.PriorityQueue;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-/**
- *
- * @author kruminsh
- */
+
 public class HuffmanCoding {
     
     public String outputMessage = "";
+    public final String encodedFileName = "./file-encoded.huf";
+    public final String decodedFileName = "./file-decoded.txt";
     
     HuffmanCoding() {
         
@@ -170,7 +169,7 @@ public class HuffmanCoding {
 
         System.out.println(codeMap);
 
-        File encodedFile = new File("./file-encoded.huf");
+        File encodedFile = new File(encodedFileName);
         try (FileWriter myWriter = new FileWriter(encodedFile)) {
             String encodedString = encodeFileContentByCodeMap(fileContentBuilder.toString(), codeMap);
             
@@ -245,7 +244,7 @@ public class HuffmanCoding {
             String decodedText = decodeFileContent(encodedContent, encodingMap);
             System.out.println("decoding-end");
             
-            File decodedFile = new File("./file-decoded.txt");
+            File decodedFile = new File(decodedFileName);
             try ( FileWriter myWriter = new FileWriter(decodedFile)) {
 
                 myWriter.write(decodedText);
