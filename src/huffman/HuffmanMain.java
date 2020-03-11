@@ -6,13 +6,6 @@
 package huffman;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.stream.Collectors;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
@@ -123,36 +116,12 @@ public class HuffmanMain extends javax.swing.JFrame {
 
     private void compressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compressButtonActionPerformed
         String filePath = filePathField.getText();
-        Map<String, Integer> freqTable = HuffmanUtils.buildFrequencyTable(filePath);
+        File file = new File(filePath);
         
-        System.out.println(freqTable);
-
-        PriorityQueue<HuffmanNode> queue = HuffmanUtils.buildPriorityQueue(freqTable);
-
-        HuffmanNode root = HuffmanUtils.buildEncodingTree(queue);
-
-        Map<Character, String> codeMap = new HashMap<>();
-        HuffmanUtils.buildEncodingMap(root, "", codeMap);
-
-        System.out.println(codeMap);
-
-        File encodedFile = new File("./file-encoded.huf");
-        try (FileWriter myWriter = new FileWriter(encodedFile)) {
-            StringBuilder fileContent = new StringBuilder();
-            FileUtils.readFileIntoStringBuild(fileContent, filePath);
-
-            String encodedString = HuffmanUtils.encodeFileContentByCodeMap(fileContent, codeMap);
-            
-            HuffmanUtils.writeCodeMapToFile(myWriter, freqTable);
-            HuffmanUtils.writeEncodedStringToFile(myWriter, encodedString);
-
-            String successMsg = "ENCODED FILE SUCCESSFULLY\n" + encodedFile.getCanonicalPath();
-            JOptionPane.showMessageDialog(this, successMsg);
-            System.out.println(successMsg);
-            
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        HuffmanCoding huffman = new HuffmanCoding();
+        huffman.encode(file);
+        JOptionPane.showMessageDialog(this, huffman.outputMessage);
+        System.out.println(huffman.outputMessage); 
     }//GEN-LAST:event_compressButtonActionPerformed
 
     private void chooseFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseFileButtonActionPerformed
